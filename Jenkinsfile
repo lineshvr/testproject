@@ -10,7 +10,7 @@ pipeline {
                     env.version = DateTimeFormatter.ofPattern('yyyy-MM-dd-HHmm').format(now(ZoneId.of('UTC'))) + "-" + env.commitId.take(6)
                     if (isQuickBuild()) {
                         currentBuild.description = "Building: ${env.commitId}"
-                        bat 'mvn clean verify'
+                        sh 'mvn clean verify'
                     }
                 }
             }
@@ -22,8 +22,8 @@ pipeline {
             steps {
                 script {
                     currentBuild.description = "Release: ${env.version}"
-                    bat "mvn versions:set -DnewVersion=${env.version}"
-                    bat 'mvn clean deploy -B'
+                    sh "mvn versions:set -DnewVersion=${env.version}"
+                    sh 'mvn clean deploy -B'
                     step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
                     tagPuppetModules("${env.version}")
                 }
@@ -34,10 +34,9 @@ pipeline {
 		
 		
 		String readCommitId() {
-    return bat(returnStdout: true, script: 'git rev-parse HEAD').trim()
+    return sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
 }
 
 String readCommitMessage() {
-    return bat(returnStdout: true, script: 'git log -1 --pretty=%B').trim()
+    return sh(returnStdout: true, script: 'git log -1 --pretty=%B').trim()
 }
-
